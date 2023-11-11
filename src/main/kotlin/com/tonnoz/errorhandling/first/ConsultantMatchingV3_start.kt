@@ -66,7 +66,7 @@ object ConsultantMatchingV3_start {
     val c1 = Consultant("Uncle Bob", setOf("spring", "java"))
     val c2 = Consultant("Tony Hoare", setOf("C++"))
     val matchingService = MatchingService()
-    println("remote client for ${c1.name} = ${matchingService.remoteClientExistForConsultant(c2)}")
+    println("remote client for ${c2.name} = ${matchingService.remoteClientExistForConsultant(c2)}")
   }
 
 }
