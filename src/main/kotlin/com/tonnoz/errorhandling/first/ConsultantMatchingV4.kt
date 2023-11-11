@@ -51,7 +51,7 @@ object ConsultantMatchingV4 {
       runCatching {
         assignmentsDao.findBestMatchingAssignment(consultant)
       }.map { it.clientName }
-        .mapCatching { remoteCheckerClient.clientAllowRemote(it) }
+       .mapCatching { remoteCheckerClient.clientAllowRemote(it) }
 
   }
 
@@ -62,10 +62,10 @@ object ConsultantMatchingV4 {
      */
     fun findBestMatchingAssignment(consultant: Consultant): Assignment =
       ASSIGNMENTS_DB.filter { assignment ->
-        assignment.stack.any{ consultant.skills.contains(it) }
+        assignment.stack.any { skill -> consultant.skills.contains(skill) }
       }.maxByOrNull { assignment ->
-        assignment.stack.count { consultant.skills.contains(it) }
-      } ?: throw NoSuchElementException("not found")
+        assignment.stack.intersect(consultant.skills).size
+      } ?: throw NoSuchElementException("No matching assignment found")
 
   }
 
@@ -75,11 +75,33 @@ object ConsultantMatchingV4 {
     val c1 = Consultant("Uncle Bob", setOf("c++"))
     val c2 = Consultant("Tony Hoare", setOf("java","spring"))
 
+
+    //we can use different way to handle a Result:
+
+    matchingService.remoteClientExistForConsultant(c2)
+      .onSuccess { println("there is at least one client that allow remote work for consultant ${c2.name}") }
+      .onFailure {   when (it) {
+            is IOException -> println("an IO error occurred: $it")
+            is NoSuchElementException -> println("No client match the skills of the candidate: $it")
+          }}
+
+
+    val res = matchingService.remoteClientExistForConsultant(c2)
+      .recover {
+        when (it) {
+          is IOException -> println("an IO error occurred: $it")
+          is NoSuchElementException -> println("No client match the skills of the candidate: $it")
+          else -> println("Unknown error: $it")
+        }
+        false
+      }
+
+
     /**
      * .fold() allow us to deal explicitly with success and failure cases.
      * Issues: we might miss easily a case in the when clause
      * because [Result.Failure] is of type [Throwable] (very general)
-     * so we can't leverage the compiler
+     * so we can't leverage the compiler as much
     */
     matchingService.remoteClientExistForConsultant(c2)
       .fold(
@@ -92,7 +114,7 @@ object ConsultantMatchingV4 {
         }
       )
 
-    println("Consultant ${c1.name} is best assigned to client: ${matchingService.findBestMatchingClient(c1)}")
+//    println("Consultant ${c1.name} is best assigned to client: ${matchingService.findBestMatchingClient(c1)}")
   }
 
 
@@ -100,7 +122,7 @@ object ConsultantMatchingV4 {
 
   /** nb. You can define a custom [Result] type using sealed classes rather than using Result from Kotlin stdlib
    * If you want to have more control over the Failure case for example, but you have to implement yourself all the
-   * monads methods: map, mapCatching, getOrElse, getCatching etc...
+   * helper functions: map, mapCatching, getOrElse, getCatching etc...
    */
   sealed class MyResult<out T> {
     data class Success<T>(val value: T) : MyResult<T>()

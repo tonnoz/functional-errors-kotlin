@@ -21,12 +21,12 @@ object ConsultantMatchingV5 {
   )
 
   class AssignmentsDao {
-    fun findBestMatchingAssignment(consultant: Consultant): Assignment = ASSIGNMENTS_DB
-      .filter { assignment -> //filter out assignments that don't match any skill
+    fun findBestMatchingAssignment(consultant: Consultant): Assignment =
+    ASSIGNMENTS_DB.filter { assignment ->
       assignment.stack.any { skill -> consultant.skills.contains(skill) }
-    }.maxByOrNull { assignment -> //get the assignment with the most amount of matching skills
-      assignment.stack.count { skill -> consultant.skills.contains(skill) }
-    } ?: throw NoSuchElementException("There are no assignments matching the skills of ${consultant.name}")
+    }.maxByOrNull { assignment ->
+      assignment.stack.intersect(consultant.skills).size
+    } ?: throw NoSuchElementException("No matching assignment found")
 }
 
 

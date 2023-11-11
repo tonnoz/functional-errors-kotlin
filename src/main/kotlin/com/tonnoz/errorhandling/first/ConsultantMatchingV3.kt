@@ -23,7 +23,7 @@ object ConsultantMatchingV3 {
       return ASSIGNMENTS_DB.filter { assignment ->
         assignment.stack.any { skill -> consultant.skills.contains(skill) }
       }.maxByOrNull { assignment ->
-        assignment.stack.count { skill -> consultant.skills.contains(skill) }
+        assignment.stack.intersect(consultant.skills).size
       }
     }
   }
@@ -61,7 +61,7 @@ object ConsultantMatchingV3 {
      * we notice some new issues :
      * - The coding style become very defensive against nulls
      * - We have again side effects due to the IOException in acceptRemoteDevs that
-     *   halts the whole flow
+     *   halts the whole flow again
      */
     fun remoteClientExistForConsultant(consultant: Consultant): Boolean =
       assignmentsDao.findBestMatchingAssignment(consultant)?.clientName
@@ -75,7 +75,6 @@ object ConsultantMatchingV3 {
     val c2 = Consultant("Tony Hoare", setOf("C++"))
     val matchingService = MatchingService()
     println("remote client for ${c2.name} = ${matchingService.remoteClientExistForConsultant(c2)}")
-    println("Consultant ${c2.name} is best assigned to client: ${matchingService.findBestMatchingClient(c2)}")
   }
 
 }

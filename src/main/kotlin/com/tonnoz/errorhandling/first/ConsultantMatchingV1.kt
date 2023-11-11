@@ -17,13 +17,10 @@ object ConsultantMatchingV1 {
 
   class AssignmentsDao {
 
-    fun findBestMatchingAssignment(consultant: Consultant): Assignment {
-      return ASSIGNMENTS_DB.filter { assignment -> //filter out assignments that don't match any skill
-        assignment.stack.any { skill -> consultant.skills.contains(skill) }
-      }.maxByOrNull { assignment -> //get the assignment with the most amount of matching skills
-        assignment.stack.count { skill -> consultant.skills.contains(skill) } // or throw exception if no assignments have been found
-      } ?: throw NoSuchElementException("There are no assignments matching the skills of ${consultant.name}")
-    }
+    fun findBestMatchingAssignment(consultant: Consultant): Assignment =
+      ASSIGNMENTS_DB.filter { it.stack.any { skill -> consultant.skills.contains(skill) }} //filter out assignments that don't match any skill
+        .maxByOrNull { it.stack.intersect(consultant.skills).size } //get the assignment with the most amount of matching skills
+        ?: throw NoSuchElementException("No matching assignment found") // or throw exception if no assignments have been found
   }
 
   class MatchingService(private val assignmentsDao: AssignmentsDao = AssignmentsDao()) {

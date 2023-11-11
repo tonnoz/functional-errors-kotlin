@@ -15,9 +15,8 @@ object ConsultantMatching {
 
   class AssignmentsDao {
     /**
-     * Given a consultant, find the best matching Assignment
-     * by comparing the max number of matching skills of
-     * the consultant to the assignment needed skills
+     * Given a consultant, find the best matching Assignment by comparing the max number of matching skills of
+     * the consultant to the assignment stack
      */
     fun findBestMatchingAssignment(consultant: Consultant): Assignment {
       TODO()
