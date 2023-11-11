@@ -19,7 +19,7 @@ object ConsultantMatchingV1_TryCatch {
 
     fun findBestMatchingAssignment(consultant: Consultant): Assignment =
       ASSIGNMENTS_DB.filter { it.stack.any { skill -> consultant.skills.contains(skill) }} //filter out assignments that don't match any skill
-        .maxByOrNull { it.stack.intersect(consultant.skills).size } //get the assignment with the most amount of matching skills
+        .maxByOrNull { it.stack.intersect(consultant.skills).size } //get the assignment with the most matching skills
         ?: throw NoSuchElementException("No matching assignment found") // or throw exception if no assignments have been found
   }
 

@@ -76,9 +76,9 @@ object ConsultantMatchingV4_Result {
     val c2 = Consultant("Tony Hoare", setOf("java","spring"))
 
 
-    //we can use different way to handle a Result:
+    //we can use different ways to handle a Result:
 
-    matchingService.remoteClientExistForConsultant(c2)
+    val result = matchingService.remoteClientExistForConsultant(c2)
       .onSuccess { println("there is at least one client that allow remote work for consultant ${c2.name}") }
       .onFailure {   when (it) {
             is IOException -> println("an IO error occurred: $it")
@@ -86,7 +86,7 @@ object ConsultantMatchingV4_Result {
           }}
 
 
-    val res = matchingService.remoteClientExistForConsultant(c2)
+    val stillAResult = matchingService.remoteClientExistForConsultant(c2)
       .recover {
         when (it) {
           is IOException -> println("an IO error occurred: $it")
@@ -103,7 +103,7 @@ object ConsultantMatchingV4_Result {
      * because [Result.Failure] is of type [Throwable] (very general)
      * so we can't leverage the compiler as much
     */
-    matchingService.remoteClientExistForConsultant(c2)
+    val nothing = matchingService.remoteClientExistForConsultant(c2)
       .fold(
         onSuccess = { println("there is at least one client that allow remote work for consultant ${c2.name}") },
         onFailure = {
@@ -114,7 +114,6 @@ object ConsultantMatchingV4_Result {
         }
       )
 
-//    println("Consultant ${c1.name} is best assigned to client: ${matchingService.findBestMatchingClient(c1)}")
   }
 
 
