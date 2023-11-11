@@ -7,7 +7,7 @@ import java.util.NoSuchElementException
 
 /*** In this variation, we make use of Either from Arrow core library to handle errors
  ***/
-object ConsultantMatchingV5 {
+object ConsultantMatchingV5_Either {
 
 
 

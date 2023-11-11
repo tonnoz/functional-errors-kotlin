@@ -7,7 +7,7 @@ import java.io.IOException
 /*** In this variation, we introduce a new class called [RemoteEmployeeCheckerClient]
  ** that simulate a Remote call (e.g. REST call) to check whether a given client supports
  ** consultants working from remote. **/
-object ConsultantMatchingV3 {
+object ConsultantMatchingV3_CascadingCall_start {
 
   data class Assignment(val name: String, val stack: Set<String>, val clientName: String)
   data class Consultant(val name: String, val skills: Set<String>)
@@ -34,12 +34,10 @@ object ConsultantMatchingV3 {
     /** (fake) remote call that returns true if [clientName] accepts remote working, false otherwise.
      * But! 1 time out of 3 the remote service is down...
      * */
-    fun acceptRemoteDevs(clientName: String): Boolean = runBlocking{
+    fun acceptRemoteDevs(clientName: String): Boolean =  runBlocking{
       val random = (0..2).random()
       if (random == 0) throw IOException("Remote service is down")
-      print("Calling remote service for clientName=[$clientName]...")
       delay(1500)
-      println("DONE!")
       clientName === "Aviation client"
     }
   }
@@ -51,21 +49,15 @@ object ConsultantMatchingV3 {
 
     /**
      * Given a consultant, find the best matching client (name) for them,
-     * using the most closely matching skill set, return "No client found" if none is found
+     * using the most closely matching skill set
      */
     fun findBestMatchingClient(consultant:Consultant): String =
       assignmentsDao.findBestMatchingAssignment(consultant)?.clientName ?: "No client found"
 
-    /**
-     * With an extra (cascading) call that can fail for network reasons,
-     * we notice some new issues :
-     * - The coding style become very defensive against nulls
-     * - We have again side effects due to the IOException in acceptRemoteDevs that
-     *   halts the whole flow again
-     */
+
     fun remoteClientExistForConsultant(consultant: Consultant): Boolean =
-      assignmentsDao.findBestMatchingAssignment(consultant)?.clientName
-      ?.let { remoteEmployeeCheckerClient.acceptRemoteDevs(it) } ?: false
+    TODO()
+
 
   }
 

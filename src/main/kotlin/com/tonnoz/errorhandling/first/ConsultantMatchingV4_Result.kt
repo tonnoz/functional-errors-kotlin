@@ -9,7 +9,7 @@ import java.util.NoSuchElementException
  ** in [AssignmentsDao.findBestMatchingAssignment] but we use the
  ** [Result] class as a wrapper, applying a more functional approach in [MatchingService] and in [main]
  *  **/
-object ConsultantMatchingV4 {
+object ConsultantMatchingV4_Result {
 
   data class Assignment(val name: String, val stack: Set<String>, val clientName: String)
   data class Consultant(val name: String, val skills: Set<String>)
