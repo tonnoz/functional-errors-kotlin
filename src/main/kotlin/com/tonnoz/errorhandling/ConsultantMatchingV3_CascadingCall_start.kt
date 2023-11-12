@@ -19,12 +19,12 @@ object ConsultantMatchingV3_CascadingCall_start {
   )
 
   class AssignmentsDao {
-    fun findBestMatchingAssignment(consultant: Consultant): Assignment? {
+    fun findBestMatchingAssignment(consultant: Consultant): Assignment {
       return ASSIGNMENTS_DB.filter { assignment ->
         assignment.stack.any { skill -> consultant.skills.contains(skill) }
       }.maxByOrNull { assignment ->
         assignment.stack.intersect(consultant.skills).size
-      }
+      } ?: throw NoSuchElementException("not found")
     }
   }
 
@@ -52,7 +52,7 @@ object ConsultantMatchingV3_CascadingCall_start {
      * using the most closely matching skill set
      */
     fun findBestMatchingClient(consultant: Consultant): String =
-      assignmentsDao.findBestMatchingAssignment(consultant)?.clientName ?: "No client found"
+      assignmentsDao.findBestMatchingAssignment(consultant).clientName
 
 
     fun remoteClientExistForConsultant(consultant: Consultant): Boolean =
@@ -67,6 +67,7 @@ object ConsultantMatchingV3_CascadingCall_start {
     val c2 = Consultant("Tony Hoare", setOf("C++"))
     val matchingService = MatchingService()
     println("remote client for ${c2.name} = ${matchingService.remoteClientExistForConsultant(c2)}")
+    println("remote client for ${c1.name} = ${matchingService.remoteClientExistForConsultant(c1)}")
   }
 
 }
