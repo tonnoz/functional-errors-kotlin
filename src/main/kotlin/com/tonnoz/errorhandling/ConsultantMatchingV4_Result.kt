@@ -1,4 +1,4 @@
-package com.tonnoz.errorhandling.first
+package com.tonnoz.errorhandling
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking

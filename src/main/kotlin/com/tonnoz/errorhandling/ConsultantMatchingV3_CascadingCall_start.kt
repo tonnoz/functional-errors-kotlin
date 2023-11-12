@@ -1,4 +1,4 @@
-package com.tonnoz.errorhandling.first
+package com.tonnoz.errorhandling
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -51,7 +51,7 @@ object ConsultantMatchingV3_CascadingCall_start {
      * Given a consultant, find the best matching client (name) for them,
      * using the most closely matching skill set
      */
-    fun findBestMatchingClient(consultant:Consultant): String =
+    fun findBestMatchingClient(consultant: Consultant): String =
       assignmentsDao.findBestMatchingAssignment(consultant)?.clientName ?: "No client found"
 
 

@@ -1,4 +1,4 @@
-package com.tonnoz.errorhandling.first
+package com.tonnoz.errorhandling
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -55,7 +55,7 @@ object ConsultantMatchingV5_Either {
     /**
      * first version: simple call with no check for remote client
      */
-    fun findBestMatchingClient(consultant:Consultant): Result<String> =
+    fun findBestMatchingClient(consultant: Consultant): Result<String> =
        runCatching {
         assignmentsDao.findBestMatchingAssignment(consultant)
       }.map { it.clientName  }
@@ -66,7 +66,7 @@ object ConsultantMatchingV5_Either {
      * that exception. This means that if the first operation fails,
      * the second operation won't be executed at all.
      */
-    fun findBestMatchingClientR(consultant:Consultant): Result<String> =
+    fun findBestMatchingClientR(consultant: Consultant): Result<String> =
       runCatching { // this behaves similar to a try/catch but with a Result return type
         val assignment = assignmentsDao.findBestMatchingAssignment(consultant)
         val remoteFriendly = remoteEmployeeCheckerClient.acceptRemoteDevs(assignment.clientName)
@@ -77,7 +77,7 @@ object ConsultantMatchingV5_Either {
     /**
      * third version: runCatching only on first call then mapCatching and fold
      */
-    fun findBestMatchingClientR2(consultant:Consultant): Result<String> {
+    fun findBestMatchingClientR2(consultant: Consultant): Result<String> {
       val assignmentResult = runCatching {
         assignmentsDao.findBestMatchingAssignment(consultant)
       }

@@ -1,8 +1,10 @@
-package com.tonnoz.errorhandling.first
+package com.tonnoz.errorhandling
 
+import java.util.NoSuchElementException
 
-/*** Let's build an app to match consultants to clients based on their skill set */
-object ConsultantMatching {
+/*** Simple implementation with try catch in [MatchingService.findBestMatchingClient] (halt the program) */
+
+object ConsultantMatchingV1_TryCatch {
 
   data class Assignment(val name: String, val stack: Set<String>, val clientName: String)
   data class Consultant(val name: String, val skills: Set<String>)
@@ -14,21 +16,22 @@ object ConsultantMatching {
   )
 
   class AssignmentsDao {
-    /**
-     * Given a consultant, find the best matching Assignment by comparing the max number of matching skills of
-     * the consultant to the assignment stack
-     */
-    fun findBestMatchingAssignment(consultant: Consultant): Assignment {
-      TODO()
-    }
+
+    fun findBestMatchingAssignment(consultant: Consultant): Assignment =
+      ASSIGNMENTS_DB.filter { it.stack.any { skill -> consultant.skills.contains(skill) }} //filter out assignments that don't match any skill
+        .maxByOrNull { it.stack.intersect(consultant.skills).size } //get the assignment with the most matching skills
+        ?: throw NoSuchElementException("No matching assignment found") // or throw exception if no assignments have been found
   }
 
   class MatchingService(private val assignmentsDao: AssignmentsDao = AssignmentsDao()) {
-    /**
-     * Given a consultant, find the best matching client (name) for them
-     */
     fun findBestMatchingClient(consultant: Consultant): String {
-      TODO()
+      return try {
+        val assignment = assignmentsDao.findBestMatchingAssignment(consultant) //No referential transparency
+        assignment.clientName
+      } catch (e: NoSuchElementException) {
+        println(e)
+        "No client found"
+      }
     }
   }
 
@@ -42,4 +45,5 @@ object ConsultantMatching {
   }
 
 }
+
 

@@ -1,4 +1,4 @@
-package com.tonnoz.errorhandling.first
+package com.tonnoz.errorhandling
 
 /*** In this variation we introduce nullable types (?) as an alternative to exceptions
  ** in [AssignmentsDao.findBestMatchingAssignment]
