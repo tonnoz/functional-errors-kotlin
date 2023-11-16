@@ -48,21 +48,11 @@ object ConsultantMatchingV4_Result_start {
     private val assignmentsDao: AssignmentsDao = AssignmentsDao(),
     private val remoteCheckerClient: RemoteCheckerClient = RemoteCheckerClient()
   ) {
-    /**
-     * We wrap the return value in a [Result] and use [runCatching] to automatically
-     * create a [Result.failure] in case an exception is raised by [AssignmentsDao.findBestMatchingAssignment]
-     */
+
     fun findBestMatchingClient(consultant: Consultant): Result<String> = TODO()
 
-    /**
-     * For this function we use a cascading call [mapCatching] to transform the result like in map but this way
-     * we catch any exception thrown by the method in scope: [RemoteCheckerClient.clientAllowRemote]
-     * and map it to a [Result.failure]
-     */
-    fun remoteClientExistForConsultant(consultant: Consultant): Result<Boolean> =
-      runCatching { assignmentsDao.findBestMatchingAssignment(consultant) }
-        .map { it.clientName }
-        .mapCatching { remoteCheckerClient.clientAllowRemote(it) }
+
+    fun remoteClientExistForConsultant(consultant: Consultant): Result<Boolean> = TODO()
 
 
   }
@@ -74,11 +64,8 @@ object ConsultantMatchingV4_Result_start {
     val c2 = Consultant("Tony Hoare", setOf("java","spring"))
 
 
-
-
-
-
     //we can use different ways to handle a Result:
+
 
     val result = matchingService.remoteClientExistForConsultant(c2)
       .onSuccess { println("there is at least one client that allow remote work for consultant ${c2.name}") }
@@ -88,6 +75,8 @@ object ConsultantMatchingV4_Result_start {
           }}
 
 
+    /** We can try to recover from a failure with [recover] but watch out if an exception is thrown in the recover block
+    *   it will be propagated to the caller. */
     val stillAResult = matchingService.remoteClientExistForConsultant(c2)
       .recover {
         when (it) {
@@ -98,6 +87,7 @@ object ConsultantMatchingV4_Result_start {
         false
       }
 
+    /** instead with [recoverCatching] if an exception is thrown in the recover block, it will be wrapped in a [Result.failure] **/
     val stillAResult1 = matchingService.remoteClientExistForConsultant(c2)
       .recoverCatching {
         when (it) {
@@ -111,9 +101,8 @@ object ConsultantMatchingV4_Result_start {
 
     /**
      * .fold() allow us to deal explicitly with success and failure cases.
-     * Issues: we might miss easily a case in the when clause
-     * because [Result.Failure] is of type [Throwable] (very general)
-     * so we can't leverage the compiler as much
+     * Issue: we might miss easily an Exception case in the when clause
+     * because [Result.Failure] is of type [Throwable] which is not a sealed class
     */
     val nothing = matchingService.remoteClientExistForConsultant(c2)
       .fold(
@@ -125,19 +114,6 @@ object ConsultantMatchingV4_Result_start {
           }
         }
       )
-
-  }
-
-
-
-
-  /** nb. You can define a custom [Result] type using sealed classes rather than using Result from Kotlin stdlib
-   * If you want to have more control over the Failure case for example, but you have to implement yourself all the
-   * helper functions: map, mapCatching, getOrElse, getCatching etc...
-   */
-  sealed class MyResult<out T> {
-    data class Success<T>(val value: T) : MyResult<T>()
-    data class Failure(val exception: Throwable, val message:String) : MyResult<Nothing>()
   }
 
 }

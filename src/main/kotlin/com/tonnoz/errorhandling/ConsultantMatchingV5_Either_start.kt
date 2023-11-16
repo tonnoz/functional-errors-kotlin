@@ -12,7 +12,7 @@ import arrow.core.raise.ensureNotNull
 object ConsultantMatchingV5_Either_start {
 
   /***
-   ***  we introduce a sealed class hierarchy [MatchingError] to represent the different types of errors that can occur
+   ***  we introduce a sealed interface [MatchingError] to represent the different types of errors that can occur
    ***/
   sealed interface MatchingError
   data class NoMatchingAssignment(val consultant: Consultant): MatchingError

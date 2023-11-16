@@ -74,19 +74,31 @@ object ConsultantMatchingV4_Result {
     val c1 = Consultant("Uncle Bob", setOf("c++"))
     val c2 = Consultant("Tony Hoare", setOf("java","spring"))
 
-
     //we can use different ways to handle a Result:
 
     val result = matchingService.remoteClientExistForConsultant(c2)
       .onSuccess { println("there is at least one client that allow remote work for consultant ${c2.name}") }
       .onFailure {   when (it) {
-            is IOException -> println("an IO error occurred: $it")
-            is NoSuchElementException -> println("No client match the skills of the candidate: $it")
-          }}
+        is IOException -> println("an IO error occurred: $it")
+        is NoSuchElementException -> println("No client match the skills of the candidate: $it")
+      }}
 
 
+    /** We can try to recover from a failure with [recover] but watch out if an exception is thrown in the recover block
+     *   it will be propagated to the caller. */
     val stillAResult = matchingService.remoteClientExistForConsultant(c2)
       .recover {
+        when (it) {
+          is IOException -> println("an IO error occurred: $it")
+          is NoSuchElementException -> println("No client match the skills of the candidate: $it")
+          else -> println("Unknown error: $it")
+        }
+        false
+      }
+
+    /** instead with [recoverCatching] if an exception is thrown in the recover block, it will be wrapped in a [Result.failure] **/
+    val stillAResult1 = matchingService.remoteClientExistForConsultant(c2)
+      .recoverCatching {
         when (it) {
           is IOException -> println("an IO error occurred: $it")
           is NoSuchElementException -> println("No client match the skills of the candidate: $it")
@@ -98,10 +110,9 @@ object ConsultantMatchingV4_Result {
 
     /**
      * .fold() allow us to deal explicitly with success and failure cases.
-     * Issues: we might miss easily a case in the when clause
-     * because [Result.Failure] is of type [Throwable] (very general)
-     * so we can't leverage the compiler as much
-    */
+     * Issue: we might miss easily an exception case in the when clause
+     * because [Result.Failure] is of type [Throwable] which is not a sealed class
+     */
     val nothing = matchingService.remoteClientExistForConsultant(c2)
       .fold(
         onSuccess = { println("there is at least one client that allow remote work for consultant ${c2.name}") },
@@ -112,19 +123,6 @@ object ConsultantMatchingV4_Result {
           }
         }
       )
-
-  }
-
-
-
-
-  /** nb. You can define a custom [Result] type using sealed classes rather than using Result from Kotlin stdlib
-   * If you want to have more control over the Failure case for example, but you have to implement yourself all the
-   * helper functions: map, mapCatching, getOrElse, getCatching etc...
-   */
-  sealed class MyResult<out T> {
-    data class Success<T>(val value: T) : MyResult<T>()
-    data class Failure(val exception: Throwable, val message:String) : MyResult<Nothing>()
   }
 
 }
