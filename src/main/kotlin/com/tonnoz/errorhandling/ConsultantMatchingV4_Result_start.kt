@@ -9,7 +9,7 @@ import java.util.NoSuchElementException
  ** in [AssignmentsDao.findBestMatchingAssignment] but we use the
  ** [Result] class as a wrapper, applying a more functional approach in [MatchingService] and in [main]
  *  **/
-object ConsultantMatchingV4_Result {
+object ConsultantMatchingV4_Result_start {
 
   data class Assignment(val name: String, val stack: Set<String>, val clientName: String)
   data class Consultant(val name: String, val skills: Set<String>)
@@ -33,6 +33,7 @@ object ConsultantMatchingV4_Result {
       } ?: throw NoSuchElementException("No matching assignment found")
 
   }
+
   class RemoteCheckerClient{
     fun clientAllowRemote(clientName: String): Boolean = runBlocking {
       val rand = (0..2).random()
@@ -42,6 +43,7 @@ object ConsultantMatchingV4_Result {
     }
   }
 
+
   class MatchingService(
     private val assignmentsDao: AssignmentsDao = AssignmentsDao(),
     private val remoteCheckerClient: RemoteCheckerClient = RemoteCheckerClient()
@@ -50,9 +52,7 @@ object ConsultantMatchingV4_Result {
      * We wrap the return value in a [Result] and use [runCatching] to automatically
      * create a [Result.failure] in case an exception is raised by [AssignmentsDao.findBestMatchingAssignment]
      */
-    fun findBestMatchingClient(consultant: Consultant): Result<String> = runCatching {
-      assignmentsDao.findBestMatchingAssignment(consultant)
-    }.map { it.clientName }
+    fun findBestMatchingClient(consultant: Consultant): Result<String> = TODO()
 
     /**
      * For this function we use a cascading call [mapCatching] to transform the result like in map but this way
@@ -60,19 +60,22 @@ object ConsultantMatchingV4_Result {
      * and map it to a [Result.failure]
      */
     fun remoteClientExistForConsultant(consultant: Consultant): Result<Boolean> =
-      runCatching {
-        assignmentsDao.findBestMatchingAssignment(consultant)
-      }.map { it.clientName }
-       .mapCatching { remoteCheckerClient.clientAllowRemote(it) }
+      runCatching { assignmentsDao.findBestMatchingAssignment(consultant) }
+        .map { it.clientName }
+        .mapCatching { remoteCheckerClient.clientAllowRemote(it) }
+
 
   }
-
 
   @JvmStatic
   fun main(args: Array<String>) {
     val matchingService = MatchingService()
     val c1 = Consultant("Uncle Bob", setOf("c++"))
     val c2 = Consultant("Tony Hoare", setOf("java","spring"))
+
+
+
+
 
 
     //we can use different ways to handle a Result:
@@ -87,6 +90,16 @@ object ConsultantMatchingV4_Result {
 
     val stillAResult = matchingService.remoteClientExistForConsultant(c2)
       .recover {
+        when (it) {
+          is IOException -> println("an IO error occurred: $it")
+          is NoSuchElementException -> println("No client match the skills of the candidate: $it")
+          else -> println("Unknown error: $it")
+        }
+        false
+      }
+
+    val stillAResult1 = matchingService.remoteClientExistForConsultant(c2)
+      .recoverCatching {
         when (it) {
           is IOException -> println("an IO error occurred: $it")
           is NoSuchElementException -> println("No client match the skills of the candidate: $it")
