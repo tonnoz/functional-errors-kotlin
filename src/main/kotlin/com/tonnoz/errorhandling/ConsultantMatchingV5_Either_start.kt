@@ -9,7 +9,7 @@ import arrow.core.raise.ensureNotNull
 
 /*** In this variation, we make use of Either from Arrow core library to handle errors
  ***/
-object ConsultantMatchingV5_Either {
+object ConsultantMatchingV5_Either_start {
 
   /***
    ***  we introduce a sealed class hierarchy [MatchingError] to represent the different types of errors that can occur
@@ -51,41 +51,11 @@ object ConsultantMatchingV5_Either {
     private val remoteCheckerClient: RemoteCheckerClient = RemoteCheckerClient()
   ) {
 
-    /**
-     * We wrap the return value in a [Either.right] in case the assignment is found
-     * and wrap a [NoMatchingAssignment] in a [Either.left] in case the assignment is not found
-     */
-    fun findBestMatchingClient(consultant: Consultant): Either<MatchingError, String> =
-      assignmentsDao.findBestMatchingAssignment(consultant)?.clientName?.right()
-        ?: NoMatchingAssignment(consultant).left()
 
-    /**
-     * We can use the [right] and [left] extension functions from [Either] to map our success and failure cases.
-     * Then we can make use of the client name (a string) with [flatMap] and call [RemoteCheckerClient.clientAllowRemote]
-     * with it. But since [RemoteCheckerClient.clientAllowRemote] can potentially throw an exception, we need to
-     * wrap it in a [Either.catch] as well. Finally, we map the exception to a [GenericError] (left) and return the Either.
-     */
-    fun remoteClientExistForConsultant(consultant: Consultant): Either<MatchingError, Boolean> =
-      assignmentsDao.findBestMatchingAssignment(consultant)?.clientName?.right()
-        ?.flatMap { a ->
-        Either
-          .catch { remoteCheckerClient.clientAllowRemote(a) }
-          .mapLeft { GenericError("Remote service down", it) }
-      } ?: NoMatchingAssignment(consultant).left()
+    fun remoteClientExistForConsultant(consultant: Consultant): Either<MatchingError, Boolean> = TODO()
 
-    /**
-     * In this variation we make use of the [either] builder scope as a monadic comprehension:
-     * In this scope we get access to functions such as [ensureNotNull], [ensure] and [recover].
-     * These gives us the ability to raise an error and have a little bit of flow typing (notice that we don't need
-     * the "assignment.?" anymore after calling the ensureNotNull function).
-     * The code is now more linear and readable too.
-     */
-    fun remoteClientExistForConsultantScoped(consultant: Consultant): Either<MatchingError, Boolean> = either {
-      val assignment = assignmentsDao.findBestMatchingAssignment(consultant)
-      ensureNotNull(assignment) { NoMatchingAssignment(consultant) } //will return the error if assignment is null
-      Either.catch {  remoteCheckerClient.clientAllowRemote(assignment.clientName) }
-        .mapLeft { GenericError("Remote service down", it) }.bind()
-    }
+
+    fun remoteClientExistForConsultantScoped(consultant: Consultant): Either<MatchingError, Boolean> = TODO()
 
   }
 
