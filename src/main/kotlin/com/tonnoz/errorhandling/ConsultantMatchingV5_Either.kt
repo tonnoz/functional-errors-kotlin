@@ -96,7 +96,7 @@ object ConsultantMatchingV5_Either {
     val c1 = Consultant("Uncle Bob", setOf("c++"))
     val c2 = Consultant("Tony Hoare", setOf("java","spring"))
 
-    val myEither = matchingService.remoteClientExistForConsultantScoped(c1)
+    val myEither = matchingService.remoteClientExistForConsultantScoped(c2)
     .onLeft {
       when(it) {
         is GenericError -> println("[${it.cause}]: ${it.details}")
